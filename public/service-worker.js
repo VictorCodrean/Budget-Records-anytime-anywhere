@@ -2,10 +2,10 @@ const FILES_TO_CACHE = [
     "/",
     "/index.html",
     "/index.js",
+    "/indexedDB.js",
     "/icons/icon-512x512.png",
     "/icons/icon-192x192.png",
-    "/db.js",
-    "/style.css"
+    "/styles.css",
 
 ];
 
@@ -15,13 +15,12 @@ const RUNTIME = "runtime";
 
 self.addEventListener("install", (event) => {
     event.waitUntil(
-        caches
-            .open(PRECACHE)
-            .then((cache) => {
-                cache.addAll(FILES_TO_CACHE);
-            })
-            .then(self.skipWaiting())
+        caches.open(PRECACHE).then((cache) => {
+            console.log(`Your files were pre-cached successfully!`);
+            return cache.addAll(FILES_TO_CACHE);
+        })
     );
+    self.skipWaiting();
 });
 
 
@@ -45,23 +44,31 @@ self.addEventListener("activate", (event) => {
 });
 
 
-self.addEventListener("fetch", (event) => {
-    if (event.request.url.includes('/api/')) {
-        event.respondWith(
-            caches.match(event.request)
-                .then((cachedResponse) => {
-                    if (cachedResponse) {
-                        return cachedResponse;
-                    }
+self.addEventListener(`fetch`, (evt) => {
+    if (evt.request.url.includes(`/api/`)) {
+        evt.respondWith(
+            caches
+                .open(RUNTIME)
+                .then((cache) =>
+                    fetch(evt.request)
+                        .then((response) => {
+                            // If the response was good, clone it and store it in the cache.
+                            if (response.status === 200) {
+                                cache.put(evt.request.url, response.clone());
+                            }
 
-                    return caches.open(RUNTIME).then((cache) => {
-                        return fetch(event.request).then((response) => {
-                            return cache.put(event.request, response.clone()).then(() => {
-                                return response;
-                            });
-                        });
-                    });
-                })
+                            return response;
+                        })
+                        // Network request failed, try to get it from the cache.
+                        .catch(() => cache.match(evt.request))
+                )
+                .catch((err) => console.log(err))
+        );
+    } else {
+        evt.respondWith(
+            caches
+                .match(evt.request)
+                .then((response) => response || fetch(evt.request))
         );
     }
 });
