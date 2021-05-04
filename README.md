@@ -1,12 +1,11 @@
 # Budget-Records-anytime-anywhere
-# Workout_Tracker - [workout-records](https://budget-anywhere-anytime.herokuapp.com/)
+# Budget - [anytime-anywhere](https://budget-anywhere-anytime.herokuapp.com/)
 
 ## Table of contents
 - [Description](#Description)
 - [User Story](#User/Story)
 - [Usage](#Usage)
 - [Framework HTML/JS](#Framework)
-- [Credits](#Credits)
 
 ## Illustration
 
